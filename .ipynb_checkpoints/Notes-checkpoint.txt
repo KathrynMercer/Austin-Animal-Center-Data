@@ -1,0 +1,143 @@
+Variable descriptions
+
+Intake:
+    Animal ID 
+      - probably not useful aside from maybe matching with the outcomes data. 
+    Name 
+      - sensitive information + not very useful - probably best to drop completely
+    DateTime
+      - Not sure if this is an intake date or a logging date? I don't really need this level of specificity unless I want to see correlation of 
+        intake with day of the week or similar. 
+    MonthYear
+      - could be useful for monitoring trends over time or potentially seeing if there is fluctuation in intake/placement based on month 
+    Found Location 
+      - probably not useful beyond maybe identifying areas that have a lot of strays/drop-offs
+      - a ton of different locations, potentially sensitive information somehow?
+    Intake Type
+      - 'Stray', 'Public Assist', 'Owner Surrender', 'Wildlife', Abandoned', 'Euthanasia Request'
+    Intake Condition 
+       - interested for correlate between placement & possible illnesses - consider clustering to manage dummies
+       - 'Normal', 'Injured', 'Pregnant', 'Sick', 'Nursing', 'Aged',  'Unknown', 'Congenital', 'Medical', 'Other', 'Neonatal',
+       'Med Attn', 'Feral', 'Behavior', 'Med Urgent', 'Space', 'Agonal', 'Neurologic', 'Panleuk', 'Parvo'
+       - Possible Clusters: Normal; Nursing/Pregnant/Neonate; Aged; Injured; Unwell (Sick, Congenital, Medical, Med Attn, Parvo); 
+        Severely Unwell (Med Urgent, Agonal, Neurologic, Panleuk); Behavioral, Feral, Other/Unknown/Space
+            - the decision to put parvo in "unwell" instead of "severely unwell" is dependent on the shelter's success rate in managing them, but the survival
+                rate it pretty good (80+%) with modern treatment. Conversely, panleuk's survival rate is still <50%. 
+            - the decision to put neurologic in the severely unwell cluster is subjective as "neuro" is often severe/life-threatening but can be 
+                mild/static long-term
+            - the decision to leave "injured" as its own category is two-fold: 1) bc injuries can often heal w/o lasting consequence whereas other "unwell" 
+                categories may have long-term consequences, and 2) injured has nearly 10000 pets included, so it's reasonable to think they might overwhelm
+                another cluster's other cases (reducing the information attainable from those other cases). Arguable 2) also applies to the generic "sick" 
+                value (7000+ pets), but I have no further information with which to separate these pets from "Med Attn", "Medical", etc.
+    Animal 
+      - 'Dog', 'Cat', 'Other', 'Bird', 'Livestock'
+      - Probably limit assessments to dog & cat +/- birds given vagueness of other variable types
+    Sex upon Intake
+      - higher rates of intake of intact vs neutered animals?
+      - Neutered Male', 'Spayed Female', 'Intact Male', 'Intact Female',  'Unknown'
+    Age upon Intake 
+      - when are the peak ages when an animal is taken in? Older for animals given up vs younger for stray?
+      - How are there negative numbers????
+    Breed
+      - may impact placement or outcome
+      - tons of different breeds; probably not accurate
+    Color - probably not that useful, but maybe investigate the "black dog effect"
+      - tons of different colors; probably not accurate
+      - could maybe investigate "easy ones" like merle, calico, brindle, etc.
+
+Outcome
+    Animal ID 
+      - probably not useful aside from maybe matching with the outcomes data. 
+    Name 
+      - sensitive information + not very useful - probably best to drop completely
+    DateTime
+      - strongly suspect this is date of outcome (based on correlation between date of birth and age of outcome matching datetime)
+      - parse to drop hours/minutes/seconds
+      - useful to monitor trends over time/fluctations based on months/years
+      - technically redundant with "age of outcome" - keeping both for now, but may only want to use one as ML input
+    MonthYear 
+      - redundant w/ date time - drop
+    Date of Birth 
+      - probably not accurate, but potentially impacts outcome
+      - redundant/collinear w/ Age upon outcome?
+    Outcome Type
+      - Rto-Adopt', 'Adoption', 'Euthanasia', 'Transfer', 'Return to Owner', 'Died', 'Disposal', 'Missing', 'Relocate',
+       'Stolen', 'Lost'
+    Outcome Subtype
+      - 'Partner', 'Foster', 'SCRP', 'Out State', 'Suffering', 'Underage', 'Snr', 'Rabies Risk', 'In Kennel', 'Offsite',
+       'Aggressive', 'Enroute', 'Emergency', 'Field', 'At Vet', 'In Foster', 'Behavior', 'Medical', 'Possible Theft', 'Barn',
+       'Customer S', 'Court/Investigation', 'In State', 'Emer', 'In Surgery', 'Prc'
+      - Consistent pairings
+            - Transfer: Partner, SCRP, Out State, Snr, In State, Emer
+            - Adoption: Adoption, Offsite, Aggressive
+            - Euthanasia: Suffering, Underage (almost always exotics), Rabies Risk (usually exotics), Behavior, Medical, 
+                Court/Investigation
+            - Died: Enroute (one single pairing w/ "missing"), Emergency, In Surgery 
+            - Return to Owner: Field, Customer S, Prc
+            - Missing: Possible Theft
+            - "In Kennel" subtype is usually "Died" but sometimes "missing"
+            - "At Vet" is Euthanasia OR Died
+            - "In Foster" is Missing or Died
+            - "Barn" transfer or adoption (relatively uncommon)
+      - SCRP is probably Special Consideration Rescue Program
+            - used for transferring animals, particularly cats, to specific rescue groups or foster care. 
+            - typically aimed at providing additional care and support for animals with special needs or those who might not easily
+              find homes through the shelter's regular adoption process.
+      - Customer S - may indicate screening or investigation that occured prior to return to owner?
+      - Prc - may indicate Post-Return Check or Pre-Return Consultation?
+    Animal Type
+      - 'Cat', 'Dog', 'Other', 'Bird', 'Livestock'
+      - matches "Animal" from intake data
+      - 'Other' always has more detail in "Breed" (ex. Other Animal -> Bat Breed)
+    Sex upon Outcome
+      - Neutered Male', 'Unknown', 'Intact Male', 'Spayed Female', 'Intact Female'
+    Age upon Outcome
+      - technically redundant with "age of outcome" - keeping both for now, but may only want to use one as ML input
+    Breed
+    Color
+
+# Potential uses of data 
+- what makes an animal more likely to be given up? what makes an animal more likely to be adopted
+- what factors are associated with intake condition, intake type, and is there a "busy season"
+- compare historic vs more recent data
+- lost to follow up animals - can I find them on the intake data and see what's up?
+- evaluate benefit to the state via Animal Type other, Rabies Risk, court investigation, disposal, euthansia + Underage 
+    +/- spay/neuter? (to validate funding)
+- assess progress on No Kill Plan (Feb 2011, ACC had a 92% live animal outcome rate)
+    - I wonder if the transfer rates have increased as the kill rate has decreased
+    - no obvious update on their website since 2011 on this initiative
+- assess duration of stay for pets who get adopted - variables associated w/ "long" vs "short" shelter duration
+
+# Next steps:
++ drop Name, DateTime, and Found Location for now; keep Animal ID for now?
++ handle Nan 
+   + intake group: only 2 rows w/ NaN data -> dropped
+   + outcome group: 
+       - 1 cat (Animal ID = A890645) w/ NaN Outcome type but Foster subtype -> 
+                all other Fosters are Outcome Type = Adoption -> 
+                manually changed this cat to Outcome Type Adoption
+       - 38 other animals have NaN as Outcome Type -> Lost to follow up? 
+            - Would be nice to trace these animals intake and see if there is info about them (common intake date/other info)
+            - lost_to_follow_up list created + dropped them from the main dataframe
+       - 2 dogs returned to owner (Animal IDs = A830333, A667395) w/ NaN sex 
+            - dropped from dataframe
+       - 9 pets w/ NaN age assigned "Unknown"
+       - all the pets with "NaN" as the subtype were adjusted to have "None" as a subtype
++ "Age Upon Intake" is a string w/ written years vs months 
+    - Options: convert to timestamp? calculate DOB?
+    - Solution - regex to parse and convert to days as an int
+    - could then use the int to get rid of negatives in the module
+    - could also convert from days -> months/years, but not necessary for processing (will need to be converted for data visualization
++ investigate negative ages in intake data
+    - typos vs other (one -3yo dog described as "aged" condition, so cannot trust abs())
+    - few pets w/ this condition, so dropping them all. 
+- Sanity check ages with categories associated w/ age extremes
+    + neonate & aged condition needs to be pruned to remove old pets miscategorized as "neonate"
+    - 16 "aged" cats with ages between 2 and 1yr
+- are there negative ages in outcome data?
+    - yes - the same pets as in the intake data -> dropping them
+- lost to follow-up writing to csv
+- consider grouping "At Vet" with "Disposal" since these animals were never candidates for adoption
+- balancing data based on outcome? vs other factor depending on goal
+- standardize data?
+- Clustering "manually" vs machine learning (one hot encoding vs other ML classification technique)?
