@@ -131,10 +131,14 @@ Outcome
 + investigate negative ages in intake data
     - typos vs other (one -3yo dog described as "aged" condition, so cannot trust abs())
     - few pets w/ this condition, so dropping them all. 
-- Sanity check ages with categories associated w/ age extremes
++ Sanity check ages with categories associated w/ age extremes
     + neonate & aged condition needs to be pruned to remove old pets miscategorized as "neonate"
     + 16 "aged" cats with ages between 2 and 1yr
-- are there negative ages in outcome data?
+    + no male pregnant animals
+    + Nursing has been split between "nursing juvenile" and "nursing adult" 
+    + no male nursing adults
+    - put nursing sanity check in module
++ are there negative ages in outcome data?
     - yes - the same pets as in the intake data -> dropping them
 - lost to follow-up writing to csv
 - consider grouping "At Vet" with "Disposal" since these animals were never candidates for adoption
