@@ -137,11 +137,12 @@ Outcome
     + no male pregnant animals
     + Nursing has been split between "nursing juvenile" and "nursing adult" 
     + no male nursing adults
-    - put nursing sanity check in module
+    + put nursing sanity check in module
 + are there negative ages in outcome data?
-    - yes - the same pets as in the intake data -> dropping them
-- lost to follow-up writing to csv
+    + yes - the same pets as in the intake data -> dropping them
+- Intake Types
 - consider grouping "At Vet" with "Disposal" since these animals were never candidates for adoption
 - balancing data based on outcome? vs other factor depending on goal
 - standardize data?
 - Clustering "manually" vs machine learning (one hot encoding vs other ML classification technique)?
+- lost to follow-up writing to csv
