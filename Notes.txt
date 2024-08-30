@@ -99,6 +99,7 @@ Outcome
 # Potential uses of data 
 - what makes an animal more likely to be given up? what makes an animal more likely to be adopted
 - what factors are associated with intake condition, intake type, and is there a "busy season"
+      - definitely cyclical periods of decreased activity (what happens every February?)
 - compare historic vs more recent data
 - lost to follow up animals - can I find them on the intake data and see what's up?
 - evaluate benefit to the state via Animal Type other, Rabies Risk, court investigation, disposal, euthansia + Underage 
@@ -107,42 +108,84 @@ Outcome
     - I wonder if the transfer rates have increased as the kill rate has decreased
     - no obvious update on their website since 2011 on this initiative
 - assess duration of stay for pets who get adopted - variables associated w/ "long" vs "short" shelter duration
+- document decreased transfer of pets since rescue contract adjusted -> likely contributing factor to inability to handle caseload
 
 # Next steps:
-+ drop Name, DateTime, and Found Location for now; keep Animal ID for now?
-+ handle Nan 
-   + intake group: only 2 rows w/ NaN data -> dropped
-   + outcome group: 
-       - 1 cat (Animal ID = A890645) w/ NaN Outcome type but Foster subtype -> 
-                all other Fosters are Outcome Type = Adoption -> 
-                manually changed this cat to Outcome Type Adoption
-       - 38 other animals have NaN as Outcome Type -> Lost to follow up? 
-            - Would be nice to trace these animals intake and see if there is info about them (common intake date/other info)
-            - lost_to_follow_up list created + dropped them from the main dataframe
-       - 2 dogs returned to owner (Animal IDs = A830333, A667395) w/ NaN sex 
-            - dropped from dataframe
-       - 9 pets w/ NaN age assigned "Unknown"
-       - all the pets with "NaN" as the subtype were adjusted to have "None" as a subtype
-+ "Age Upon Intake" is a string w/ written years vs months 
-    - Options: convert to timestamp? calculate DOB?
-    - Solution - regex to parse and convert to days as an int
-    - could then use the int to get rid of negatives in the module
-    - could also convert from days -> months/years, but not necessary for processing (will need to be converted for data visualization
-+ investigate negative ages in intake data
-    - typos vs other (one -3yo dog described as "aged" condition, so cannot trust abs())
-    - few pets w/ this condition, so dropping them all. 
-+ Sanity check ages with categories associated w/ age extremes
-    + neonate & aged condition needs to be pruned to remove old pets miscategorized as "neonate"
-    + 16 "aged" cats with ages between 2 and 1yr
-    + no male pregnant animals
-    + Nursing has been split between "nursing juvenile" and "nursing adult" 
-    + no male nursing adults
-    + put nursing sanity check in module
-+ are there negative ages in outcome data?
-    + yes - the same pets as in the intake data -> dropping them
-- Intake Types
-- consider grouping "At Vet" with "Disposal" since these animals were never candidates for adoption
-- balancing data based on outcome? vs other factor depending on goal
-- standardize data?
-- Clustering "manually" vs machine learning (one hot encoding vs other ML classification technique)?
-- lost to follow-up writing to csv
+Data Cleaning
+  - add Sanity checks for: 
+      + female cat & Tortie/Torbie/Calico
+          + let's not since tortie/torbie/calico CAN be male (just rare)
+      - merle is not a cat color.
+Preprocessing 
+  Cat EDA
+     + Intake Types Consolidation
+     + Outcome Types Consolidation 
+          - "At Vet" with "Disposal" since these animals were never candidates for adoption
+     + Model Selection - no clear relationships that can be relaxed into linear detected, so use machine learning to further assess
+  Cat Machine Learning Algorithm
+    - Preprocessing
+        + Convert DateTime data to:
+            - year as numerical data
+            - month as cyclically encoded numerical data
+                df['month_sin'] = np.sin(2 * np.pi * df.month/12)
+                df['month_cos'] = np.cos(2 * np.pi * df.month/12)
+            - isWeekend boolean
+        + Shuffle data (pandas inbuilt .sample)
+        + Scale numerical data (column transformer + standard scaler)
+            - consider log transform for ages & duration of stay
+        + Balancing: 
+            - SMOTENC to balance & oversample
+            - Consider just undersampling as an alternative depending on model performance
+        - Other Feature Engineering Ideas:
+            - combine colors & patterns again now that they are sensible
+            - combine breeds & colors/patterns/coat lengths if possible???
+            - combine outcome type & subtype
+            - bin ages into kitten, young adult, older then 2yo
+            - consider embedding instead of one hot encoding
+    - Tangents that are a dangerous waste of time
+      - why are the fawn cats more likely to be euthanized?
+      - what is a tan cat????
+      - why is there a slow down every February?
+- Pipeline for Preprocessing?
+- Validation data - currently 10% of total shuffled data
+    - consider using most recent 10%?
+- Test data - currently 10% of total shuffled data  
+    - consider using most recent 10% (pull from website when time & use cleaning module)
+- Logging for Module To Flag:
+      - unrecognized breeds (or typos) during coat length assignment method (cat)
+      - unrecognized colors/patterns
+
+# Finished
+Data Cleaning
+       + drop Name, DateTime, and Found Location for now; keep Animal ID for now?
+       + handle Nan 
+          + intake group: only 2 rows w/ NaN data -> dropped
+          + outcome group: 
+              - 1 cat (Animal ID = A890645) w/ NaN Outcome type but Foster subtype -> 
+                       all other Fosters are Outcome Type = Adoption -> 
+                       manually changed this cat to Outcome Type Adoption
+              - 38 other animals have NaN as Outcome Type -> Lost to follow up? 
+                   - Would be nice to trace these animals intake and see if there is info about them (common intake date/other info)
+                   - lost_to_follow_up list created + dropped them from the main dataframe
+              - 2 dogs returned to owner (Animal IDs = A830333, A667395) w/ NaN sex 
+                   - dropped from dataframe
+              - 9 pets w/ NaN age assigned "Unknown"
+              - all the pets with "NaN" as the subtype were adjusted to have "None" as a subtype
+       + "Age Upon Intake" is a string w/ written years vs months 
+           - Options: convert to timestamp? calculate DOB?
+           - Solution - regex to parse and convert to days as an int
+           - could then use the int to get rid of negatives in the module
+           - could also convert from days -> months/years, but not necessary for processing (will need to be converted for data visualization
+       + investigate negative ages in intake data
+           - typos vs other (one -3yo dog described as "aged" condition, so cannot trust abs())
+           - few pets w/ this condition, so dropping them all. 
+       + Sanity check ages with categories associated w/ age extremes
+           + neonate & aged condition needs to be pruned to remove old pets miscategorized as "neonate"
+           + 16 "aged" cats with ages between 2 and 1yr
+           + no male pregnant animals
+           + Nursing has been split between "nursing juvenile" and "nursing adult" 
+           + no male nursing adults
+           + put nursing sanity check in module
+       + are there negative ages in outcome data?
+           + yes - the same pets as in the intake data -> dropping them
+       + lost to follow-up writing to csv
